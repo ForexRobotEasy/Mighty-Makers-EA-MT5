@@ -1,0 +1,132 @@
+
+// Program: Mighty Makers EA MT5
+// Developer's Site: forexroboteasy.com
+// Development Name: Forex Robot Easy Team
+
+// Include necessary libraries
+#include <Trade\Trade.mqh>
+#include <Neuro\MurrayLevels.mqh>
+
+// Declare global variables
+bool g_isTradingEnabled = true;
+int g_stopLoss = 50;
+int g_takeProfit = 100;
+
+// Initialize objects
+CTrade g_trade;
+CMurrayLevels g_murrayLevels;
+
+// Function to execute trades
+void ExecuteTrades()
+{
+    // Check if trading is enabled
+    if (!g_isTradingEnabled)
+    {
+        Print('Trading is disabled.');
+        return;
+    }
+    
+    // Get market data
+    double currentPrice = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+    
+    // Perform trend analysis using neural network
+    double trend = g_murrayLevels.GetTrend(currentPrice);
+    
+    // Check for potential trading opportunities
+    if (trend > 0.5)
+    {
+        // Open a buy trade
+        g_trade.Buy(_Symbol, 0.01, currentPrice, g_stopLoss, g_takeProfit);
+        Print('Buy trade executed.');
+    }
+    else if (trend < -0.5)
+    {
+        // Open a sell trade
+        g_trade.Sell(_Symbol, 0.01, currentPrice, g_stopLoss, g_takeProfit);
+        Print('Sell trade executed.');
+    }
+    else
+    {
+        Print('No trading opportunity found.');
+    }
+}
+
+// Function to monitor market data
+void MonitorMarketData()
+{
+    // Continuously monitor market data
+    while (true)
+    {
+        if (g_isTradingEnabled)
+        {
+            ExecuteTrades();
+        }
+        
+        Sleep(1000);
+    }
+}
+
+// Function to enable or disable trading
+void EnableTrading(bool enable)
+{
+    g_isTradingEnabled = enable;
+    
+    if (g_isTradingEnabled)
+    {
+        Print('Trading enabled.');
+    }
+    else
+    {
+        Print('Trading disabled.');
+    }
+}
+
+// Function to set stop loss and take profit
+void SetStopLossTakeProfit(int stopLoss, int takeProfit)
+{
+    g_stopLoss = stopLoss;
+    g_takeProfit = takeProfit;
+    
+    Print('Stop loss and take profit set to ', stopLoss, ' and ', takeProfit);
+}
+
+// Function to initialize the EA
+void OnInit()
+{
+    // Set up Murray Levels strategy
+    g_murrayLevels.Init();
+    
+    // Start monitoring market data
+    MonitorMarketData();
+}
+
+// Function to deinitialize the EA
+void OnDeinit(const int reason)
+{
+    // Clean up resources
+    g_trade.Cleanup();
+    
+    Print('EA deinitialized.');
+}
+
+// Function to handle incoming tick events
+void OnTick()
+{
+    // Execute trades on tick events
+    if (g_isTradingEnabled)
+    {
+        ExecuteTrades();
+    }
+}
+
+// Function to handle trade events
+void OnTrade()
+{
+    // Add trade event handling logic if required
+}
+
+// Function to handle account events
+void OnAccount()
+{
+    // Add account event handling logic if required
+}
